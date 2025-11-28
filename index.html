@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cartão de Natal</title>
+
+  <style>
+    /* ===== RESET BÁSICO ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #ffdde1 0%, #ff4b5c 40%, #7a001f 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #222;
+      overflow: hidden;
+    }
+
+    /* Container principal do cartão */
+    .card-container {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px 16px;
+    }
+
+    /* Camada decorativa de neve e brilhos */
+    .effects-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .snowflake {
+      position: absolute;
+      top: -10vh;
+      font-size: 12px;
+      opacity: 0.9;
+      animation-name: fall;
+      animation-timing-function: linear;
+      animation-iteration-count: 1;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) translateX(15px);
+        opacity: 0;
+      }
+    }
+
+    /* Pequenos brilhos no fundo quando a carta abre */
+    .twinkle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+      animation: twinkle 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      from {
+        transform: scale(0.6);
+        opacity: 0.5;
+      }
+      to {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+    }
+
+    /* ===== ENVELOPE (CARTA FECHADA) ===== */
+
+    .envelope-wrapper {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+    .envelope-wrapper.hidden {
+      opacity: 0;
+      transform: translateY(40px) scale(0.9);
+      pointer-events: none;
+    }
+
+    .envelope {
+      position: relative;
+      width: min(80vw, 260px);
+      height: min(52vw, 170px);
+      background: linear-gradient(135deg, #fffdf8, #f6f0e8);
+      border-radius: 14px;
+      box-shadow:
+        0 0 18px rgba(255, 255, 255, 0.8),
+        0 0 26px rgba(255, 0, 76, 0.7),
+        0 18px 28px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      animation: float 2.8s ease-in-out infinite;
+    }
+
+    /* brilho pulsando na borda */
+    .envelope::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 18px rgba(255, 255, 255, 0.9);
+      mix-blend-mode: screen;
+      pointer-events: none;
+      animation: glow 1.8s ease-in-out infinite alternate;
+    }
+
+    /* forma do envelope */
+    .envelope-body {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 240, 232, 0.9));
+      overflow: hidden;
+    }
+
+    /* triângulo da frente (flap inferior) */
+    .envelope-body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #f4e7d2, #e8d6b8);
+      clip-path: polygon(0 0, 50% 60%, 100% 0, 100% 100%, 0 100%);
+    }
+
+    /* flap superior */
+    .envelope-body::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #fffaf0, #f1e4ce);
+      clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 0, 0 0);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    /* selo */
+    .seal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -10%);
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #ffe2e2, #c70039);
+      border: 3px solid rgba(255, 255, 255, 0.85);
+      box-shadow:
+        0 0 10px rgba(255, 255, 255, 0.8),
+        0 6px 10px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+    }
+
+    .seal span {
+      transform: translateY(1px);
+    }
+
+    .tap-hint {
+      border: none;
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes glow {
+      from {
+        box-shadow:
+          0 0 12px rgba(255, 255, 255, 0.6),
+          0 0 20px rgba(255, 0, 76, 0.6);
+      }
+      to {
+        box-shadow:
+          0 0 22px rgba(255, 255, 255, 1),
+          0 0 32px rgba(255, 0, 102, 0.9);
+      }
+    }
+
+    /* ===== CARTA ABERTA ===== */
+
+    .letter {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      margin-top: 12px;
+      opacity: 0;
+      transform: translateY(30px) scale(0.96);
+      pointer-events: none;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .letter.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .letter-inner {
+      position: relative;
+      padding: 18px 16px 20px;
+      border-radius: 18px;
+      background:
+        /* leve textura de papel usando gradientes */
+        radial-gradient(circle at 0 0, rgba(0, 0, 0, 0.04), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0.05), transparent 55%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.03),
+          rgba(0, 0, 0, 0.03) 1px,
+          rgba(255, 255, 255, 0.8) 2px,
+          rgba(255, 255, 255, 0.8) 4px
+        ),
+        #fdfaf5;
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.6);
+      overflow: hidden;
+    }
+
+    /* borda decorativa sutil */
+    .letter-inner::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 14px;
+      border: 1px dashed rgba(180, 150, 120, 0.6);
+      pointer-events: none;
+    }
+
+    .letter-header {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .letter-title {
+      font-size: clamp(1.6rem, 6vw, 2rem);
+      color: #c0002a;
+      text-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
+      font-weight: 800;
+    }
+
+    .letter-subtitle {
+      font-size: 0.9rem;
+      color: #b03a3a;
+      text-transform: uppercase;
+      letter-spacing: 0.17em;
+      margin-top: 2px;
+    }
+
+    .letter-body {
+      margin-top: 12px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #3c2a20;
+    }
+
+    .letter-body p + p {
+      margin-top: 8px;
+    }
+
+    .highlight {
+      color: #c0002a;
+      font-weight: 600;
+    }
+
+    .signature {
+      margin-top: 14px;
+      font-style: italic;
+      color: #8a5a3a;
+      text-align: right;
+      font-size: 0.9rem;
+    }
+
+    .divider {
+      margin: 10px auto 8px;
+      width: 60%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #c0002a, transparent);
+      opacity: 0.7;
+    }
+
+    /* rodapé com mini ícones natalinos em texto */
+    .letter-footer {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      text-align: center;
+      color: #b26a3a;
+    }
+
+    /* Ajustes gerais para telas muito pequenas */
+    @media (max-width: 360px) {
+      .card-container {
+        padding-inline: 10px;
+      }
+
+      .letter-inner {
+        padding: 14px 12px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Camada para neve e brilhos -->
+  <div class="effects-layer" id="effectsLayer"></div>
+
+  <div class="card-container">
+    <!-- ENVELOPE FECHADO -->
+    <div class="envelope-wrapper" id="envelopeWrapper">
+      <div class="envelope">
+        <div class="envelope-body"></div>
+        <div class="seal">
+          <span>🎄</span>
+        </div>
+      </div>
+      <button class="tap-hint">Toque para abrir ♥</button>
+    </div>
+
+    <!-- CARTA ABERTA -->
+    <div class="letter" id="letter">
+      <div class="letter-inner">
+        <div class="letter-header">
+          <div class="letter-title">Feliz Natal</div>
+          <div class="letter-subtitle">boas festas</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="letter-body">
+          <p>
+            Que este <span class="highlight">Natal</span> encha o seu coração de paz,
+            a sua casa de amor e seus dias de esperança renovada.
+          </p>
+          <p>
+            Que cada risada, cada abraço e cada momento em família sejam
+            lembrados com carinho, e que o novo ano traga ainda mais
+            conquistas, saúde e realizações.
+          </p>
+          <p>
+            Você é parte especial desta história e merece um Natal iluminado,
+            cheio de gratidão e coisas boas.
+          </p>
+        </div>
+
+        <div class="signature">
+          Com carinho,<br />
+          <span class="highlight">boas festas para você!</span>
+        </div>
+
+        <div class="letter-footer">
+          ✨ Paz • 🎁 Amor • 🎄 Esperança
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const envelopeWrapper = document.getElementById("envelopeWrapper");
+    const letter = document.getElementById("letter");
+    const effectsLayer = document.getElementById("effectsLayer");
+
+    let cardOpened = false;
+
+    // abre a carta ao clicar no envelope
+    envelopeWrapper.addEventListener("click", () => {
+      if (cardOpened) return;
+      cardOpened = true;
+
+      envelopeWrapper.classList.add("hidden");
+      letter.classList.add("visible");
+
+      // ativa neve e brilhos
+      startSnow();
+      createTwinkles();
+    });
+
+    /* ===== NEVE NATALINA ===== */
+    function createSnowflake() {
+      const snowflake = document.createElement("span");
+      snowflake.classList.add("snowflake");
+      snowflake.textContent = Math.random() > 0.5 ? "❄" : "✼";
+
+      const size = Math.random() * 10 + 8; // 8 a 18px
+      const duration = Math.random() * 4 + 6; // 6 a 10s
+      const left = Math.random() * 100; // 0 a 100vw
+      const delay = Math.random() * 3;
+
+      snowflake.style.left = left + "vw";
+      snowflake.style.fontSize = size + "px";
+      snowflake.style.animationDuration = duration + "s";
+      snowflake.style.animationDelay = delay + "s";
+
+      effectsLayer.appendChild(snowflake);
+
+      // remove do DOM depois que cair
+      setTimeout(() => {
+        snowflake.remove();
+      }, (duration + delay) * 1000);
+    }
+
+    function startSnow() {
+      // cria neve constante
+      for (let i = 0; i < 20; i++) {
+        createSnowflake();
+      }
+      setInterval(createSnowflake, 700);
+    }
+
+    /* ===== BRILHOS NO FUNDO ===== */
+    function createTwinkles() {
+      const count = 18;
+      for (let i = 0; i < count; i++) {
+        const tw = document.createElement("span");
+        tw.classList.add("twinkle");
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        const size = Math.random() * 4 + 2;
+        const delay = Math.random() * 2;
+
+        tw.style.left = left + "vw";
+        tw.style.top = top + "vh";
+        tw.style.width = size + "px";
+        tw.style.height = size + "px";
+        tw.style.animationDelay = delay + "s";
+
+        effectsLayer.appendChild(tw);
+      }
+    }
+  </script>
+</body>
+</html>
